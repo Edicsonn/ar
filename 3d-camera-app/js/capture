@@ -1,0 +1,47 @@
+// js/capture.js
+
+export function captureAndShare(videoElement, webglCanvas, options = {}) {
+  const width = videoElement.videoWidth || window.innerWidth;
+  const height = videoElement.videoHeight || window.innerHeight;
+
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = width;
+  tempCanvas.height = height;
+  const ctx = tempCanvas.getContext('2d');
+
+  // Draw camera frame
+  ctx.drawImage(videoElement, 0, 0, width, height);
+
+  // Draw WebGL / Three.js canvas on top
+  ctx.drawImage(webglCanvas, 0, 0, width, height);
+
+  // Convert to blob and share
+  tempCanvas.toBlob(async (blob) => {
+    if (!blob) return;
+
+    const file = new File([blob], 'photo.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: options.title || 'My 3D Photo',
+          text: options.text || 'Check this out 👀',
+          files: [file],
+        });
+      } catch (err) {
+        console.log('Share cancelled or failed:', err);
+      }
+    } else {
+      // Fallback: download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'photo.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      alert('Image downloaded. Share it manually on social media.');
+    }
+  }, 'image/png');
+}

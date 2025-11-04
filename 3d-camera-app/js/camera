@@ -1,0 +1,15 @@
+// js/camera.js
+
+export async function startCamera(videoElement, facingMode = 'environment') {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode }
+    });
+    videoElement.srcObject = stream;
+    return stream;
+  } catch (err) {
+    console.error('Error starting camera:', err);
+    alert('Camera access denied or unavailable.');
+    throw err;
+  }
+}
