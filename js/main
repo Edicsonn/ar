@@ -1,0 +1,27 @@
+// js/main.js
+
+import { startCamera } from './camera.js';
+import { initThree } from './threeScene.js';
+import { captureAndShare } from './capture.js';
+
+const videoEl = document.getElementById('camera');
+const threeCanvas = document.getElementById('three-canvas');
+const snapBtn = document.getElementById('snap');
+
+async function init() {
+  // Start camera (back camera by default; change to "user" for selfie)
+  await startCamera(videoEl, 'environment');
+
+  // Init Three.js scene with model
+  initThree(threeCanvas, 'models/model.glb');
+
+  // Hook capture button
+  snapBtn.addEventListener('click', () => {
+    captureAndShare(videoEl, threeCanvas, {
+      title: '3D Snapshot',
+      text: 'Made with my 3D camera web app 📸'
+    });
+  });
+}
+
+init();

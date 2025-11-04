@@ -1,0 +1,77 @@
+// js/threeScene.js
+
+import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
+import { GLTFLoader } from 'https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
+
+let renderer, scene, camera3D, model;
+
+export function initThree(canvasElement, modelUrl = 'models/model.glb') {
+  // Renderer
+  renderer = new THREE.WebGLRenderer({
+    canvas: canvasElement,
+    alpha: true,
+    antialias: true
+  });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  resizeRenderer();
+
+  // Scene & Camera
+  scene = new THREE.Scene();
+  camera3D = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+  camera3D.position.set(0, 0, 3);
+
+  // Lights
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+  dirLight.position.set(0, 1, 2);
+  scene.add(dirLight);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambient);
+
+  // Load model
+  const loader = new GLTFLoader();
+  loader.load(
+    modelUrl,
+    (gltf) => {
+      model = gltf.scene;
+      model.rotation.y = Math.PI; // face camera
+      scene.add(model);
+    },
+    undefined,
+    (error) => console.error('Error loading model:', error)
+  );
+
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (model) {
+      model.rotation.y += 0.01; // slow rotation
+    }
+
+    renderer.render(scene, camera3D);
+  }
+
+  animate();
+
+  // Resize handler
+  window.addEventListener('resize', resizeRenderer);
+
+  return { renderer, scene, camera3D };
+}
+
+function resizeRenderer() {
+  if (!renderer || !camera3D) return;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  renderer.setSize(width, height, false);
+  camera3D.aspect = width / height;
+  camera3D.updateProjectionMatrix();
+}
